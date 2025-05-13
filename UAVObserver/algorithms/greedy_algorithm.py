@@ -1,19 +1,20 @@
 import math
 from models.solution import Solution
+from models.task import Task
 
 
 class GreedyAlgorithm:
-    def __init__(self, task):
+    def __init__(self, task: Task):
         self.task = task
 
-    def SolveRoute(self):
-
+    def SolveRoute(self) -> Solution:
         P = [self.task.A]
         S = set()
         t_total = 0
         current = self.task.A
-
         objects = list(self.task.J)
+        distances = []  # Store distances between consecutive points
+        flight_times = []  # Store flight times for each leg
 
         while t_total < self.task.T:
             min_time = float('inf')
@@ -34,7 +35,10 @@ class GreedyAlgorithm:
             P.append((next_obj[0], next_obj[1]))
             S.add((next_obj[0], next_obj[1]))
             d = math.sqrt((next_obj[0] - current[0]) ** 2 + (next_obj[1] - current[1]) ** 2)
-            t_total += (d / self.task.v) + next_obj[2]
+            w = d / self.task.v
+            distances.append(d)
+            flight_times.append(w)
+            t_total += w + next_obj[2]
             current = (next_obj[0], next_obj[1])
             objects.pop(next_obj[3])
 
@@ -42,11 +46,14 @@ class GreedyAlgorithm:
         t_to_B = d / self.task.v
         if t_total + t_to_B <= self.task.T:
             P.append(self.task.B)
+            distances.append(d)
+            flight_times.append(t_to_B)
             t_total += t_to_B
         else:
             P = []
             S = set()
             t_total = 0
+            distances = []
+            flight_times = []
 
-        return Solution(P, S, t_total)
-
+        return Solution(P, S, t_total, distances, flight_times)

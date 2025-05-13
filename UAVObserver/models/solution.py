@@ -6,5 +6,5 @@ class Solution:
         self.route = route
         self.inspected = inspected
         self.total_time = total_time
-        self.distances = distances  # List of distances between consecutive points
-        self.flight_times = flight_times  #
+        self.distances = distances
+        self.flight_times = flight_times

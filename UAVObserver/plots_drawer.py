@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -58,12 +59,16 @@ class PlotsDrawer:
             canvas.get_tk_widget().destroy()
         self.vis_canvases.clear()
 
-    def draw(self, solution: Solution, task: Task, algorithm_name: str, frame):
+    def draw(self, solutions: List[Solution], task: Task, algorithm_names: List[str], frame):
         self.clear_canvases()
-        num_algorithms = 1  # Single plot per draw call
+        num_algorithms = len(solutions)
+        if num_algorithms == 0:
+            return
+        # Create a figure with subplots for each algorithm
         fig, axes = plt.subplots(1, num_algorithms, figsize=(5 * num_algorithms, 5), squeeze=False)
-        axes = axes[0]
-        self.plot_route(solution, task, algorithm_name, fig, axes[0])
+        axes = axes[0]  # Get the first row of axes
+        for idx, (solution, name) in enumerate(zip(solutions, algorithm_names)):
+            self.plot_route(solution, task, name, fig, axes[idx])
         plt.tight_layout()
         canvas = FigureCanvasTkAgg(fig, master=frame)
         canvas.draw()

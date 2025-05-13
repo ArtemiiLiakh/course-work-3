@@ -152,6 +152,14 @@ class UAVRoutePlanningApp:
                     self.output_text.delete(1.0, tk.END)
                     self.output_text.insert(tk.END, f"Помилка збереження у файл: {str(e)}\n")
 
+    def load_task(self):
+        try:
+            task_data = json.loads(self.input_text.get(1.0, tk.END))
+            self.task = Task(task_data["n"], tuple(task_data["A"]), tuple(task_data["B"]), [tuple(j) for j in task_data["J"]], task_data["v"], task_data["T"])
+        except Exception as e:
+            self.output_text.delete(1.0, tk.END)
+            self.output_text.insert(tk.END, f"Помилка завантаження: {str(e)}")
+
     def edit_task(self):
         try:
             task_data = json.loads(self.input_text.get(1.0, tk.END))
@@ -169,7 +177,9 @@ class UAVRoutePlanningApp:
             return
 
         self.output_text.delete(1.0, tk.END)
-
+        solutions = []
+        algorithm_names = []
+        # Solve for each algorithm and collect solutions
         for name, algorithm_class in self.registry.get_algorithms().items():
             algorithm = algorithm_class(self.task)
             start_time = time.time()
@@ -182,7 +192,11 @@ class UAVRoutePlanningApp:
             self.output_text.insert(tk.END, f"Відстані між точками: {solution.distances}\n")
             self.output_text.insert(tk.END, f"Час перельотів: {solution.flight_times}\n")
             self.output_text.insert(tk.END, f"Час виконання: {(end_time - start_time) * 1000:.2f} мс\n\n")
-            self.plots_drawer.draw(solution, self.task, name, self.vis_frame)
+            solutions.append(solution)
+            algorithm_names.append(name)
+
+        # Draw all solutions in a single call
+        self.plots_drawer.draw(solutions, self.task, algorithm_names, self.vis_frame)
 
     def generate_experiments(self):
         min_size = int(self.exp_params["min_size"].get())

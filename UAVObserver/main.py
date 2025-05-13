@@ -1,16 +1,12 @@
 import json
 import time
-from datetime import datetime
-from tkinter import ttk, scrolledtext
+from tkinter import ttk, scrolledtext, filedialog
 import tkinter as tk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 from algorithms.algorithms_registry import AlgorithmRegistry
 from algorithms.greedy_algorithm import GreedyAlgorithm
-from models.solution import Solution
 from models.task import Task
 from task_generator import TaskGenerator
+from plots_drawer import PlotsDrawer
 
 
 class UAVRoutePlanningApp:
@@ -20,22 +16,26 @@ class UAVRoutePlanningApp:
         self.registry = AlgorithmRegistry()
         self.registry.register("Жадібний", GreedyAlgorithm)
         self.task = None
-        self.task_generator = TaskGenerator()
+        self.task_generator = TaskGenerator()  # Initialize the task generator
+        self.plots_drawer = PlotsDrawer()  # Initialize the plots drawer
 
-
+        # GUI Layout
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(pady=10, expand=True)
 
+        # Task Input Tab
         self.task_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.task_frame, text="Робота з ІЗ")
 
+        # Parameters for task generation
         self.gen_params = {
-            "n": tk.StringVar(value="5"),
-            "v": tk.StringVar(value="6"),
-            "T": tk.StringVar(value="30"),
-            "p": tk.StringVar(value="30"),
+            "n": tk.StringVar(value="5"),  # Default number of objects
+            "v": tk.StringVar(value="6"),  # Default UAV speed (m/s)
+            "T": tk.StringVar(value="30"),  # Default max flight time (s)
+            "p": tk.StringVar(value="30"),  # Default plane size
         }
 
+        # Use grid for consistent layout
         ttk.Label(self.task_frame, text="Параметри генерації:").grid(row=0, column=0, columnspan=2, pady=5)
         ttk.Label(self.task_frame, text="Кількість об'єктів (n):").grid(row=1, column=0, padx=5, pady=2, sticky="e")
         ttk.Entry(self.task_frame, textvariable=self.gen_params["n"]).grid(row=1, column=1, padx=5, pady=2, sticky="w")
@@ -55,20 +55,21 @@ class UAVRoutePlanningApp:
         self.button_frame.grid(row=7, column=0, columnspan=2, pady=5)
         ttk.Button(self.button_frame, text="Генерувати", command=self.generate_task).pack(side=tk.LEFT, padx=5)
         ttk.Button(self.button_frame, text="Зберегти", command=self.save_task).pack(side=tk.LEFT, padx=5)
-        ttk.Button(self.button_frame, text="Завантажити", command=self.load_task).pack(side=tk.LEFT, padx=5)
+        ttk.Button(self.button_frame, text="Завантажити з файлу", command=self.load_task_from_file).pack(side=tk.LEFT, padx=5)
+        ttk.Button(self.button_frame, text="Зберегти у файл", command=self.save_task_to_file).pack(side=tk.LEFT, padx=5)
         ttk.Button(self.button_frame, text="Редагувати", command=self.edit_task).pack(side=tk.LEFT, padx=5)
-        ttk.Button(self.button_frame, text="Розв'язати та візуалізувати", command=self.solve_and_visualize).pack(
-            side=tk.LEFT, padx=5)
+        ttk.Button(self.button_frame, text="Розв'язати та візуалізувати", command=self.solve_and_visualize).pack(side=tk.LEFT, padx=5)
 
         self.output_label = ttk.Label(self.task_frame, text="Результати:")
         self.output_label.grid(row=8, column=0, columnspan=2, pady=5)
         self.output_text = scrolledtext.ScrolledText(self.task_frame, height=10, width=50)
         self.output_text.grid(row=9, column=0, columnspan=2, padx=5, pady=5)
 
+        # Visualization Tab
         self.vis_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.vis_frame, text="Візуалізація")
-        self.vis_canvases = []
 
+        # Experiments Tab
         self.exp_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.exp_frame, text="Експерименти")
 
@@ -109,8 +110,7 @@ class UAVRoutePlanningApp:
             if n < 0 or v <= 0 or T <= 0 or p <= 0:
                 raise ValueError("Недопустимі значення параметрів: n≥0, v>0, T>0, p>0")
             self.task = self.task_generator.generate_task(n, v, T, p)
-            task_data = {"n": self.task.n, "A": self.task.A, "B": self.task.B, "J": self.task.J, "v": self.task.v,
-                         "T": self.task.T}
+            task_data = {"n": self.task.n, "A": self.task.A, "B": self.task.B, "J": self.task.J, "v": self.task.v, "T": self.task.T}
             self.input_text.delete(1.0, tk.END)
             self.input_text.insert(tk.END, json.dumps(task_data, indent=2))
         except ValueError as e:
@@ -119,73 +119,48 @@ class UAVRoutePlanningApp:
 
     def save_task(self):
         if self.task:
-            task_data = {"n": self.task.n, "A": self.task.A, "B": self.task.B, "J": self.task.J, "v": self.task.v,
-                         "T": self.task.T}
+            task_data = {"n": self.task.n, "A": self.task.A, "B": self.task.B, "J": self.task.J, "v": self.task.v, "T": self.task.T}
             self.input_text.delete(1.0, tk.END)
             self.input_text.insert(tk.END, json.dumps(task_data, indent=2))
 
-    def load_task(self):
-        try:
-            task_data = json.loads(self.input_text.get(1.0, tk.END))
-            self.task = Task(task_data["n"], tuple(task_data["A"]), tuple(task_data["B"]),
-                             [tuple(j) for j in task_data["J"]], task_data["v"], task_data["T"])
-        except Exception as e:
-            self.output_text.delete(1.0, tk.END)
-            self.output_text.insert(tk.END, f"Помилка завантаження: {str(e)}")
+    def load_task_from_file(self):
+        file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        if file_path:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    task_data = json.load(file)
+                    self.task = Task(task_data["n"], tuple(task_data["A"]), tuple(task_data["B"]), [tuple(j) for j in task_data["J"]], task_data["v"], task_data["T"])
+                    self.input_text.delete(1.0, tk.END)
+                    self.input_text.insert(tk.END, json.dumps(task_data, indent=2))
+                    self.output_text.delete(1.0, tk.END)
+                    self.output_text.insert(tk.END, f"Задача успішно завантажена з {file_path}\n")
+            except Exception as e:
+                self.output_text.delete(1.0, tk.END)
+                self.output_text.insert(tk.END, f"Помилка завантаження з файлу: {str(e)}\n")
+
+    def save_task_to_file(self):
+        if self.task:
+            file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+            if file_path:
+                try:
+                    task_data = {"n": self.task.n, "A": self.task.A, "B": self.task.B, "J": self.task.J, "v": self.task.v, "T": self.task.T}
+                    with open(file_path, 'w', encoding='utf-8') as file:
+                        json.dump(task_data, file, indent=2)
+                    self.output_text.delete(1.0, tk.END)
+                    self.output_text.insert(tk.END, f"Задача успішно збережено у {file_path}\n")
+                except Exception as e:
+                    self.output_text.delete(1.0, tk.END)
+                    self.output_text.insert(tk.END, f"Помилка збереження у файл: {str(e)}\n")
 
     def edit_task(self):
         try:
             task_data = json.loads(self.input_text.get(1.0, tk.END))
-            self.task = Task(task_data["n"], tuple(task_data["A"]), tuple(task_data["B"]),
-                             [tuple(j) for j in task_data["J"]], task_data["v"], task_data["T"])
+            self.task = Task(task_data["n"], tuple(task_data["A"]), tuple(task_data["B"]), [tuple(j) for j in task_data["J"]], task_data["v"], task_data["T"])
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, "Дані успішно відредаговані.\n")
         except Exception as e:
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, f"Помилка редагування: {str(e)}")
-
-    def plot_route(self, solution: Solution, algorithm_name: str, fig, ax):
-        # Plot all points from the task
-        all_points_x = [self.task.A[0]] + [self.task.B[0]] + [j[0] for j in self.task.J]
-        all_points_y = [self.task.A[1]] + [self.task.B[1]] + [j[1] for j in self.task.J]
-        ax.scatter(all_points_x, all_points_y, color='gray', label="Усі точки", alpha=0.5, s=50)
-
-        # Plot inspected objects with green squares
-        inspected_x = [x for x, y in solution.inspected]
-        inspected_y = [y for x, y in solution.inspected]
-        ax.scatter(inspected_x, inspected_y, color='green', label="Обстежені об'єкти", marker='s', s=100)
-
-        # Plot A and B with stars
-        ax.scatter(*self.task.A, color='red', label="A (Старт)", marker='*', s=100)
-        ax.scatter(*self.task.B, color='purple', label="B (Фініш)", marker='*', s=100)
-
-        # Plot the route line connecting only the solution points
-        x_coords, y_coords = zip(*solution.route)
-        ax.plot(x_coords, y_coords, '-', label=f"Маршрут ({algorithm_name})", color='blue')
-
-        total_distance = sum(solution.distances) if solution.distances else 0
-        current_time = datetime.now().strftime("%I:%M %p EEST, %A, %B %d, %Y")
-        ax.set_title(
-            f"Візуалізація маршруту ({algorithm_name})\nЧас: {solution.total_time:.2f} с\nЗагальна відстань: {total_distance:.2f} м\nДата: {current_time}")
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.grid(True)
-        ax.legend()
-
-        # Annotate each leg with distance and flight time
-        for i in range(len(solution.route) - 1):
-            x1, y1 = solution.route[i]
-            x2, y2 = solution.route[i + 1]
-            mid_x = (x1 + x2) / 2
-            mid_y = (y1 + y2) / 2
-            distance = solution.distances[i]
-            flight_time = solution.flight_times[i]
-            ax.annotate(f"D: {distance:.2f}m\nT: {flight_time:.2f}s",
-                        xy=(mid_x, mid_y),
-                        xytext=(5, 5),
-                        textcoords="offset points",
-                        fontsize=8,
-                        bbox=dict(boxstyle="round,pad=0.5", fc="yellow", alpha=0.5))
 
     def solve_and_visualize(self):
         if not self.task:
@@ -194,17 +169,8 @@ class UAVRoutePlanningApp:
             return
 
         self.output_text.delete(1.0, tk.END)
-        # Clear previous visualizations
-        for canvas in self.vis_canvases:
-            canvas.get_tk_widget().destroy()
-        self.vis_canvases.clear()
 
-        # Create a figure with subplots for each algorithm
-        num_algorithms = len(self.registry.get_algorithms())
-        fig, axes = plt.subplots(1, num_algorithms, figsize=(5 * num_algorithms, 5), squeeze=False)
-        axes = axes[0]  # Get the first row of axes (1D array of Axes objects)
-
-        for idx, (name, algorithm_class) in enumerate(self.registry.get_algorithms().items()):
+        for name, algorithm_class in self.registry.get_algorithms().items():
             algorithm = algorithm_class(self.task)
             start_time = time.time()
             solution = algorithm.SolveRoute()
@@ -216,13 +182,7 @@ class UAVRoutePlanningApp:
             self.output_text.insert(tk.END, f"Відстані між точками: {solution.distances}\n")
             self.output_text.insert(tk.END, f"Час перельотів: {solution.flight_times}\n")
             self.output_text.insert(tk.END, f"Час виконання: {(end_time - start_time) * 1000:.2f} мс\n\n")
-            self.plot_route(solution, name, fig, axes[idx])
-
-        plt.tight_layout()
-        canvas = FigureCanvasTkAgg(fig, master=self.vis_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack()
-        self.vis_canvases.append(canvas)
+            self.plots_drawer.draw(solution, self.task, name, self.vis_frame)
 
     def generate_experiments(self):
         min_size = int(self.exp_params["min_size"].get())
@@ -268,8 +228,7 @@ class UAVRoutePlanningApp:
             self.exp_output_text.insert(tk.END, f"Середня кількість обстежених об'єктів: {avg_inspected:.2f}\n")
             self.exp_output_text.insert(tk.END, "Деталі:\n")
             for i, res in enumerate(solutions):
-                self.exp_output_text.insert(tk.END,
-                                            f"Завдання {i + 1}: Обстежено: {len(res['solution'].inspected)}, Час: {res['solution'].total_time:.2f} с, Виконання: {res['execution_time']:.2f} мс\n")
+                self.exp_output_text.insert(tk.END, f"Завдання {i+1}: Обстежено: {len(res['solution'].inspected)}, Час: {res['solution'].total_time:.2f} с, Виконання: {res['execution_time']:.2f} мс\n")
             self.exp_output_text.insert(tk.END, "\n")
 
 

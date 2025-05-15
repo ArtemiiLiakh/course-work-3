@@ -4,10 +4,10 @@ from tkinter import ttk, scrolledtext, filedialog
 import tkinter as tk
 from algorithms.algorithms_registry import AlgorithmRegistry
 from algorithms.greedy_algorithm import GreedyAlgorithm
+from algorithms.ant_algorithm import AntAlgorithm
 from models.task import Task
 from task_generator import TaskGenerator
 from plots_drawer import PlotsDrawer
-
 
 class UAVRoutePlanningApp:
     def __init__(self, root):
@@ -15,6 +15,7 @@ class UAVRoutePlanningApp:
         self.root.title("Планування маршруту БПЛА")
         self.registry = AlgorithmRegistry()
         self.registry.register("Жадібний", GreedyAlgorithm)
+        self.registry.register("Мурашиний", AntAlgorithm)
         self.task = None
         self.task_generator = TaskGenerator()  # Initialize the task generator
         self.plots_drawer = PlotsDrawer()  # Initialize the plots drawer

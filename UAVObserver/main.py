@@ -93,9 +93,7 @@ class UAVRoutePlanningApp:
         ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["step"]).grid(row=0, column=5, padx=5)
         ttk.Label(self.exp_params_frame, text="К-сть завдань:").grid(row=1, column=0, padx=5)
         ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["tasks_per_size"]).grid(row=1, column=1, padx=5)
-        ttk.Label(self.exp_params_frame, text="Мін. діапазон:").grid(row=1, column=2, padx=5)
-        ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["range_min"]).grid(row=1, column=3, padx=5)
-        ttk.Label(self.exp_params_frame, text="Макс. діапазон:").grid(row=1, column=4, padx=5)
+        ttk.Label(self.exp_params_frame, text="Розмір поля:").grid(row=1, column=4, padx=5)
         ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["range_max"]).grid(row=1, column=5, padx=5)
 
         ttk.Button(self.exp_frame, text="Запустити експерименти", command=self.run_experiments).pack(pady=5)
@@ -204,7 +202,6 @@ class UAVRoutePlanningApp:
         max_size = int(self.exp_params["max_size"].get())
         step = int(self.exp_params["step"].get())
         tasks_per_size = int(self.exp_params["tasks_per_size"].get())
-        range_min = float(self.exp_params["range_min"].get())
         range_max = float(self.exp_params["range_max"].get())
 
         experiments = []

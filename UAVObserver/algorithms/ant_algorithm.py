@@ -27,7 +27,8 @@ class AlgorithmParams:
         m: int,
         n: int,
         t0: float,
-        max_iter: int
+        max_iter: int,
+        stagnation: int
     ):
         self.a = a
         self.b = b
@@ -36,6 +37,7 @@ class AlgorithmParams:
         self.n = n
         self.t0 = t0
         self.max_iter = max_iter
+        self.stagnation = stagnation
 
 class AntAlgorithm:
     def __init__(self, task: Task, params: Optional[AlgorithmParams]=None):
@@ -69,8 +71,13 @@ class AntAlgorithm:
         bestDistances: List[float] = []
         bestFlightTimes: List[float] = []
         totalTime = float('inf')
+        
+        stagnationIter = 0
 
         for _ in range(max_iter):
+            if stagnationIter >= self.params.stagnation:
+                break
+            
             for k in range(m):
                 current = A
                 currentIndex = 0
@@ -101,6 +108,11 @@ class AntAlgorithm:
                 path.append(B)
 
                 if (len(Sk) > len(bestS) or (len(Sk) == len(bestS) and time < totalTime)):
+                    if (bestS == Sk):
+                        stagnationIter += 1
+                    else:
+                        stagnationIter = 0
+
                     bestS = Sk
                     bestPath = path
                     totalTime = time

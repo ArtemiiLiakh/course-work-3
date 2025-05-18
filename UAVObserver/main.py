@@ -55,7 +55,6 @@ class UAVRoutePlanningApp:
         self.button_frame = ttk.Frame(self.task_frame)
         self.button_frame.grid(row=7, column=0, columnspan=2, pady=5)
         ttk.Button(self.button_frame, text="Генерувати", command=self.generate_task).pack(side=tk.LEFT, padx=5)
-        ttk.Button(self.button_frame, text="Зберегти", command=self.save_task).pack(side=tk.LEFT, padx=5)
         ttk.Button(self.button_frame, text="Завантажити з файлу", command=self.load_task_from_file).pack(side=tk.LEFT, padx=5)
         ttk.Button(self.button_frame, text="Зберегти у файл", command=self.save_task_to_file).pack(side=tk.LEFT, padx=5)
         ttk.Button(self.button_frame, text="Редагувати", command=self.edit_task).pack(side=tk.LEFT, padx=5)
@@ -177,11 +176,6 @@ class UAVRoutePlanningApp:
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, f"Помилка генерації: {str(e)}\n")
 
-    def save_task(self):
-        if self.task:
-            task_data = {"n": self.task.n, "A": self.task.A, "B": self.task.B, "J": self.task.J, "v": self.task.v, "T": self.task.T}
-            self.input_text.delete(1.0, tk.END)
-            self.input_text.insert(tk.END, json.dumps(task_data, indent=2))
 
     def load_task_from_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])

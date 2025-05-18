@@ -51,7 +51,8 @@ class AntAlgorithm:
                 m = 8,
                 n = 120,
                 t0 = 0.01,
-                max_iter = 30
+                max_iter = 30,
+                stagnation= 10
             )
         self.params = params
         self.G: List[Point] = [
@@ -168,3 +169,6 @@ class AntAlgorithm:
         for j, pj in enumerate(propabilities):
             if pj >= p: 
                 return candidates[j]
+
+    def ChangeMaxIteration(self, newValue : int):
+        self.params.max_iter = newValue

@@ -74,31 +74,92 @@ class UAVRoutePlanningApp:
         self.exp_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.exp_frame, text="Експерименти")
 
-        self.exp_params_frame = ttk.Frame(self.exp_frame)
-        self.exp_params_frame.pack(pady=5)
-        self.exp_params = {
-            "min_size": tk.StringVar(value="1"),
-            "max_size": tk.StringVar(value="10"),
-            "step": tk.StringVar(value="1"),
-            "tasks_per_size": tk.StringVar(value="5"),
-            "range_min": tk.StringVar(value="0"),
+        self.exp_notebook = ttk.Notebook(self.exp_frame)
+        self.exp_notebook.pack(pady=10, expand=True)
+
+        # 3.4.1: Вплив параметра завершення алгоритму мурашиних колоній
+        self.exp_341_frame = ttk.Frame(self.exp_notebook)
+        self.exp_notebook.add(self.exp_341_frame, text="3.4.1")
+
+        self.exp_341_params = {
+            "max_iters": tk.StringVar(value="50,100,150,200"),
+            "n": tk.StringVar(value="10"),
+            "T": tk.StringVar(value="30"),
+            "tasks_per_iter": tk.StringVar(value="20"),
+            "v": tk.StringVar(value="6"),
             "range_max": tk.StringVar(value="20"),
         }
+        ttk.Label(self.exp_341_frame, text="Значення max_iter (через кому):").grid(row=0, column=0, padx=5,
+                                                                                   columnspan=2)
+        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["max_iters"]).grid(row=0, column=2, padx=5,
+                                                                                          columnspan=2)
+        ttk.Label(self.exp_341_frame, text="Кількість об’єктів (n):").grid(row=1, column=0, padx=5)
+        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["n"]).grid(row=1, column=1, padx=5)
+        ttk.Label(self.exp_341_frame, text="Макс. час (T, с):").grid(row=1, column=2, padx=5)
+        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["T"]).grid(row=1, column=3, padx=5)
+        ttk.Label(self.exp_341_frame, text="К-сть завдань для усереднення:").grid(row=2, column=0, padx=5)
+        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["tasks_per_iter"]).grid(row=2, column=1, padx=5)
+        ttk.Label(self.exp_341_frame, text="Розмір поля:").grid(row=2, column=2, padx=5)
+        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["range_max"]).grid(row=2, column=3, padx=5)
+        ttk.Button(self.exp_341_frame, text="Запустити", command=self.run_exp_341).grid(row=3, column=0, columnspan=4,
+                                                                                        pady=5)
+        self.exp_341_output = scrolledtext.ScrolledText(self.exp_341_frame, height=10, width=50)
+        self.exp_341_output.grid(row=4, column=0, columnspan=4, pady=5)
 
-        ttk.Label(self.exp_params_frame, text="Мін. розмір:").grid(row=0, column=0, padx=5)
-        ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["min_size"]).grid(row=0, column=1, padx=5)
-        ttk.Label(self.exp_params_frame, text="Макс. розмір:").grid(row=0, column=2, padx=5)
-        ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["max_size"]).grid(row=0, column=3, padx=5)
-        ttk.Label(self.exp_params_frame, text="Крок:").grid(row=0, column=4, padx=5)
-        ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["step"]).grid(row=0, column=5, padx=5)
-        ttk.Label(self.exp_params_frame, text="К-сть завдань:").grid(row=1, column=0, padx=5)
-        ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["tasks_per_size"]).grid(row=1, column=1, padx=5)
-        ttk.Label(self.exp_params_frame, text="Розмір поля:").grid(row=1, column=4, padx=5)
-        ttk.Entry(self.exp_params_frame, textvariable=self.exp_params["range_max"]).grid(row=1, column=5, padx=5)
+        # 3.4.2: Вплив параметрів задачі
+        self.exp_342_frame = ttk.Frame(self.exp_notebook)
+        self.exp_notebook.add(self.exp_342_frame, text="3.4.2")
 
-        ttk.Button(self.exp_frame, text="Запустити експерименти", command=self.run_experiments).pack(pady=5)
-        self.exp_output_text = scrolledtext.ScrolledText(self.exp_frame, height=15, width=50)
-        self.exp_output_text.pack()
+        self.exp_342_params = {
+            "T_values": tk.StringVar(value="30,45,60"),
+            "n": tk.StringVar(value="10"),
+            "tasks_per_T": tk.StringVar(value="20"),
+            "v": tk.StringVar(value="6"),
+            "range_max": tk.StringVar(value="20"),
+        }
+        ttk.Label(self.exp_342_frame, text="Значення T (через кому):").grid(row=0, column=0, padx=5, columnspan=2)
+        ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["T_values"]).grid(row=0, column=2, padx=5,
+                                                                                         columnspan=2)
+        ttk.Label(self.exp_342_frame, text="Кількість об’єктів (n):").grid(row=1, column=0, padx=5)
+        ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["n"]).grid(row=1, column=1, padx=5)
+        ttk.Label(self.exp_342_frame, text="К-сть завдань для усереднення:").grid(row=2, column=0, padx=5)
+        ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["tasks_per_T"]).grid(row=2, column=1, padx=5)
+        ttk.Label(self.exp_342_frame, text="Розмір поля:").grid(row=2, column=2, padx=5)
+        ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["range_max"]).grid(row=2, column=3, padx=5)
+        ttk.Button(self.exp_342_frame, text="Запустити", command=self.run_exp_342).grid(row=3, column=0, columnspan=4,
+                                                                                        pady=5)
+        self.exp_342_output = scrolledtext.ScrolledText(self.exp_342_frame, height=10, width=50)
+        self.exp_342_output.grid(row=4, column=0, columnspan=4, pady=5)
+
+        # 3.4.3: Вплив розмірності задачі
+        self.exp_343_frame = ttk.Frame(self.exp_notebook)
+        self.exp_notebook.add(self.exp_343_frame, text="3.4.3")
+
+        self.exp_343_params = {
+            "min_size": tk.StringVar(value="5"),
+            "max_size": tk.StringVar(value="20"),
+            "step": tk.StringVar(value="5"),
+            "tasks_per_n": tk.StringVar(value="20"),
+            "T": tk.StringVar(value="30"),
+            "v": tk.StringVar(value="6"),
+            "range_max": tk.StringVar(value="20"),
+        }
+        ttk.Label(self.exp_343_frame, text="Мін. кількість об’єктів:").grid(row=0, column=0, padx=5)
+        ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["min_size"]).grid(row=0, column=1, padx=5)
+        ttk.Label(self.exp_343_frame, text="Макс. кількість об’єктів:").grid(row=0, column=2, padx=5)
+        ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["max_size"]).grid(row=0, column=3, padx=5)
+        ttk.Label(self.exp_343_frame, text="Крок:").grid(row=1, column=0, padx=5)
+        ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["step"]).grid(row=1, column=1, padx=5)
+        ttk.Label(self.exp_343_frame, text="К-сть завдань для усереднення:").grid(row=1, column=2, padx=5)
+        ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["tasks_per_n"]).grid(row=1, column=3, padx=5)
+        ttk.Label(self.exp_343_frame, text="Макс. час (T, с):").grid(row=2, column=0, padx=5)
+        ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["T"]).grid(row=2, column=1, padx=5)
+        ttk.Label(self.exp_343_frame, text="Розмір поля:").grid(row=2, column=2, padx=5)
+        ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["range_max"]).grid(row=2, column=3, padx=5)
+        ttk.Button(self.exp_343_frame, text="Запустити", command=self.run_exp_343).grid(row=3, column=0, columnspan=4,
+                                                                                        pady=5)
+        self.exp_343_output = scrolledtext.ScrolledText(self.exp_343_frame, height=10, width=50)
+        self.exp_343_output.grid(row=4, column=0, columnspan=4, pady=5)
 
     def generate_task(self):
         try:
@@ -178,7 +239,7 @@ class UAVRoutePlanningApp:
         self.output_text.delete(1.0, tk.END)
         solutions = []
         algorithm_names = []
-        # Solve for each algorithm and collect solutions
+
         for name, algorithm_class in self.registry.get_algorithms().items():
             algorithm = algorithm_class(self.task)
             start_time = time.time()
@@ -194,54 +255,134 @@ class UAVRoutePlanningApp:
             solutions.append(solution)
             algorithm_names.append(name)
 
-        # Draw all solutions in a single call
         self.plots_drawer.draw(solutions, self.task, algorithm_names, self.vis_frame)
 
-    def generate_experiments(self):
-        min_size = int(self.exp_params["min_size"].get())
-        max_size = int(self.exp_params["max_size"].get())
-        step = int(self.exp_params["step"].get())
-        tasks_per_size = int(self.exp_params["tasks_per_size"].get())
-        range_max = float(self.exp_params["range_max"].get())
+    def generate_exp_341_tasks(self):
+        n = int(self.exp_341_params["n"].get())
+        T = float(self.exp_341_params["T"].get())
+        tasks_per_iter = int(self.exp_341_params["tasks_per_iter"].get())
+        range_max = float(self.exp_341_params["range_max"].get())
+        v = float(self.exp_341_params["v"].get())
+        max_iters = [int(x.strip()) for x in self.exp_341_params["max_iters"].get().split(",")]
 
         experiments = []
-        for n in range(min_size, max_size + 1, step):
-            for _ in range(tasks_per_size):
-                task = self.task_generator.generate_task(
-                    n=n,
-                    v=6,
-                    T=30,
-                    p=range_max
-                )
+        for _ in range(tasks_per_iter):
+            task = self.task_generator.generate_task(n, v, T, range_max)
+            experiments.append((task, max_iters))
+        return experiments
+
+    def generate_exp_342_tasks(self):
+        n = int(self.exp_342_params["n"].get())
+        tasks_per_T = int(self.exp_342_params["tasks_per_T"].get())
+        range_max = float(self.exp_342_params["range_max"].get())
+        v = float(self.exp_342_params["v"].get())
+        T_values = [float(x.strip()) for x in self.exp_342_params["T_values"].get().split(",")]
+
+        experiments = []
+        for T in T_values:
+            for _ in range(tasks_per_T):
+                task = self.task_generator.generate_task(n, v, T, range_max)
                 experiments.append(task)
         return experiments
 
-    def run_experiments(self):
-        experiments = self.generate_experiments()
-        self.exp_output_text.delete(1.0, tk.END)
+    def generate_exp_343_tasks(self):
+        min_size = int(self.exp_343_params["min_size"].get())
+        max_size = int(self.exp_343_params["max_size"].get())
+        step = int(self.exp_343_params["step"].get())
+        tasks_per_n = int(self.exp_343_params["tasks_per_n"].get())
+        T = float(self.exp_343_params["T"].get())
+        range_max = float(self.exp_343_params["range_max"].get())
+        v = float(self.exp_343_params["v"].get())
 
-        results = {name: [] for name in self.registry.get_algorithms().keys()}
-        for task in experiments:
-            for name, algorithm_class in self.registry.get_algorithms().items():
-                algorithm = algorithm_class(task)
+        experiments = []
+        for n in range(min_size, max_size + 1, step):
+            for _ in range(tasks_per_n):
+                task = self.task_generator.generate_task(n, v, T, range_max)
+                experiments.append(task)
+        return experiments
+
+    def run_exp_341(self):
+        experiments = self.generate_exp_341_tasks()
+        self.exp_341_output.delete(1.0, tk.END)
+
+        results = {int(x.strip()): {"inspected": 0.0, "time": 0.0} for x in
+                   self.exp_341_params["max_iters"].get().split(",")}
+        tasks_per_iter = int(self.exp_341_params["tasks_per_iter"].get())
+
+        for task, max_iters in experiments:
+            for max_iter in max_iters:
+                algorithm = self.registry.get_algorithms()["Мурашиний"](task)
                 start_time = time.time()
+                algorithm.ChangeMaxIteration(max_iter)
                 solution = algorithm.SolveRoute()
                 end_time = time.time()
-                results[name].append({
-                    "solution": solution,
-                    "execution_time": (end_time - start_time) * 1000
-                })
+                exec_time = (end_time - start_time) * 1000
+                results[max_iter]["inspected"] += len(solution.inspected) / tasks_per_iter
+                results[max_iter]["time"] += exec_time / tasks_per_iter
 
-        for name, solutions in results.items():
-            avg_time = sum(r["execution_time"] for r in solutions) / len(solutions)
-            avg_inspected = sum(len(r["solution"].inspected) for r in solutions) / len(solutions)
-            self.exp_output_text.insert(tk.END, f"Алгоритм: {name}\n")
-            self.exp_output_text.insert(tk.END, f"Середній час виконання: {avg_time:.2f} мс\n")
-            self.exp_output_text.insert(tk.END, f"Середня кількість обстежених об'єктів: {avg_inspected:.2f}\n")
-            self.exp_output_text.insert(tk.END, "Деталі:\n")
-            for i, res in enumerate(solutions):
-                self.exp_output_text.insert(tk.END, f"Завдання {i+1}: Обстежено: {len(res['solution'].inspected)}, Час: {res['solution'].total_time:.2f} с, Виконання: {res['execution_time']:.2f} мс\n")
-            self.exp_output_text.insert(tk.END, "\n")
+        self.exp_341_output.insert(tk.END, "3.4.1: Вплив параметра завершення алгоритму мурашиних колоній\n")
+        for max_iter, data in results.items():
+            self.exp_341_output.insert(tk.END,
+                                       f"max_iter={max_iter}: Середня кількість об’єктів={data['inspected']:.2f}, Середній час={data['time']:.2f} мс\n")
+
+    def run_exp_342(self):
+        experiments = self.generate_exp_342_tasks()
+        self.exp_342_output.delete(1.0, tk.END)
+
+        results = {float(x.strip()): {"greedy_inspected": 0.0, "aco_inspected": 0.0} for x in
+                   self.exp_342_params["T_values"].get().split(",")}
+        tasks_per_T = int(self.exp_342_params["tasks_per_T"].get())
+
+        for task in experiments:
+            T = task.T
+            greedy = self.registry.get_algorithms()["Жадібний"](task)
+            aco = self.registry.get_algorithms()["Мурашиний"](task)
+            start_time = time.time()
+            greedy_solution = greedy.SolveRoute()
+            end_time = time.time()
+            results[T]["greedy_inspected"] += len(greedy_solution.inspected) / tasks_per_T
+            start_time = time.time()
+            aco_solution = aco.SolveRoute()
+            end_time = time.time()
+            results[T]["aco_inspected"] += len(aco_solution.inspected) / tasks_per_T
+
+        self.exp_342_output.insert(tk.END, "3.4.2: Вплив параметрів задачі (T)\n")
+        for T, data in results.items():
+            self.exp_342_output.insert(tk.END,
+                                       f"T={T}: Жадібний={data['greedy_inspected']:.2f}, Мурашиний={data['aco_inspected']:.2f}\n")
+
+    def run_exp_343(self):
+        experiments = self.generate_exp_343_tasks()
+        self.exp_343_output.delete(1.0, tk.END)
+
+        results = {n: {"greedy_inspected": 0.0, "aco_inspected": 0.0, "greedy_time": 0.0, "aco_time": 0.0}
+                   for n in
+                   range(int(self.exp_343_params["min_size"].get()), int(self.exp_343_params["max_size"].get()) + 1,
+                         int(self.exp_343_params["step"].get()))}
+        tasks_per_n = int(self.exp_343_params["tasks_per_n"].get())
+
+        for task in experiments:
+            n = task.n
+            greedy = self.registry.get_algorithms()["Жадібний"](task)
+            aco = self.registry.get_algorithms()["Мурашиний"](task)
+            start_time = time.time()
+            greedy_solution = greedy.SolveRoute()
+            end_time = time.time()
+            exec_time = (end_time - start_time) * 1000
+            results[n]["greedy_inspected"] += len(greedy_solution.inspected) / tasks_per_n
+            results[n]["greedy_time"] += exec_time / tasks_per_n
+            start_time = time.time()
+            aco_solution = aco.SolveRoute()
+            end_time = time.time()
+            exec_time = (end_time - start_time) * 1000
+            results[n]["aco_inspected"] += len(aco_solution.inspected) / tasks_per_n
+            results[n]["aco_time"] += exec_time / tasks_per_n
+
+        self.exp_343_output.insert(tk.END, "3.4.3: Вплив розмірності задачі (n)\n")
+        for n, data in results.items():
+            self.exp_343_output.insert(tk.END,
+                                       f"n={n}: Жадібний (об’єктів={data['greedy_inspected']:.2f}, час={data['greedy_time']:.2f} мс), "
+                                       f"Мурашиний (об’єктів={data['aco_inspected']:.2f}, час={data['aco_time']:.2f} мс)\n")
 
 
 if __name__ == "__main__":

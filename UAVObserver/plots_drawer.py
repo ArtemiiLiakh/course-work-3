@@ -13,21 +13,18 @@ class PlotsDrawer:
         self.vis_canvases = []
 
     def plot_route(self, solution: Solution, task: Task, algorithm_name: str, fig, ax):
-        # Plot all points from the task
+
         all_points_x = [task.A[0]] + [task.B[0]] + [j[0] for j in task.J]
         all_points_y = [task.A[1]] + [task.B[1]] + [j[1] for j in task.J]
         ax.scatter(all_points_x, all_points_y, color='gray', label="Усі точки", alpha=0.5, s=50)
 
-        # Plot inspected objects with green squares
         inspected_x = [x for x, y in solution.inspected]
         inspected_y = [y for x, y in solution.inspected]
         ax.scatter(inspected_x, inspected_y, color='green', label="Обстежені об'єкти", marker='s', s=100)
 
-        # Plot A and B with stars
         ax.scatter(*task.A, color='red', label="A (Старт)", marker='*', s=100)
         ax.scatter(*task.B, color='purple', label="B (Фініш)", marker='*', s=100)
 
-        # Plot the route line connecting only the solution points
         x_coords, y_coords = zip(*solution.route)
         ax.plot(x_coords, y_coords, '-', label=f"Маршрут ({algorithm_name})", color='blue')
 
@@ -39,7 +36,6 @@ class PlotsDrawer:
         ax.grid(True)
         ax.legend()
 
-        # Annotate each leg with distance and flight time
         for i in range(len(solution.route) - 1):
             x1, y1 = solution.route[i]
             x2, y2 = solution.route[i + 1]
@@ -64,9 +60,9 @@ class PlotsDrawer:
         num_algorithms = len(solutions)
         if num_algorithms == 0:
             return
-        # Create a figure with subplots for each algorithm
+
         fig, axes = plt.subplots(1, num_algorithms, figsize=(5 * num_algorithms, 5), squeeze=False)
-        axes = axes[0]  # Get the first row of axes
+        axes = axes[0]
         for idx, (solution, name) in enumerate(zip(solutions, algorithm_names)):
             self.plot_route(solution, task, name, fig, axes[idx])
         plt.tight_layout()

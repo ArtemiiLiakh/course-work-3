@@ -13,8 +13,8 @@ class GreedyAlgorithm:
         t_total = 0
         current = self.task.A
         objects = list(self.task.J)
-        distances = []  # Store distances between consecutive points
-        flight_times = []  # Store flight times for each leg
+        distances = []
+        flight_times = []
 
         while t_total < self.task.T:
             min_time = float('inf')

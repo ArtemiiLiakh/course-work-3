@@ -17,26 +17,26 @@ class UAVRoutePlanningApp:
         self.registry.register("Жадібний", GreedyAlgorithm)
         self.registry.register("Мурашиний", AntAlgorithm)
         self.task = None
-        self.task_generator = TaskGenerator()  # Initialize the task generator
-        self.plots_drawer = PlotsDrawer()  # Initialize the plots drawer
+        self.task_generator = TaskGenerator()
+        self.plots_drawer = PlotsDrawer()
 
-        # GUI Layout
+
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(pady=10, expand=True)
 
-        # Task Input Tab
+
         self.task_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.task_frame, text="Робота з ІЗ")
 
-        # Parameters for task generation
+
         self.gen_params = {
-            "n": tk.StringVar(value="5"),  # Default number of objects
-            "v": tk.StringVar(value="6"),  # Default UAV speed (m/s)
-            "T": tk.StringVar(value="30"),  # Default max flight time (s)
-            "p": tk.StringVar(value="30"),  # Default plane size
+            "n": tk.StringVar(value="5"),
+            "v": tk.StringVar(value="6"),
+            "T": tk.StringVar(value="30"),
+            "p": tk.StringVar(value="30"),
         }
 
-        # Use grid for consistent layout
+
         ttk.Label(self.task_frame, text="Параметри генерації:").grid(row=0, column=0, columnspan=2, pady=5)
         ttk.Label(self.task_frame, text="Кількість об'єктів (n):").grid(row=1, column=0, padx=5, pady=2, sticky="e")
         ttk.Entry(self.task_frame, textvariable=self.gen_params["n"]).grid(row=1, column=1, padx=5, pady=2, sticky="w")
@@ -65,11 +65,11 @@ class UAVRoutePlanningApp:
         self.output_text = scrolledtext.ScrolledText(self.task_frame, height=10, width=50)
         self.output_text.grid(row=9, column=0, columnspan=2, padx=5, pady=5)
 
-        # Visualization Tab
+
         self.vis_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.vis_frame, text="Візуалізація")
 
-        # Experiments Tab
+
         self.exp_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.exp_frame, text="Експерименти")
 

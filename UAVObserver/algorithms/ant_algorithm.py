@@ -51,7 +51,7 @@ class AntAlgorithm:
                 m = 8,
                 n = 120,
                 t0 = 0.01,
-                max_iter = 30,
+                max_iter = 200,
                 stagnation= 10
             )
         self.params = params

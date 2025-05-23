@@ -30,7 +30,7 @@ class PlotsDrawer:
 
         total_distance = sum(solution.distances) if solution.distances else 0
         current_time = datetime.now().strftime("%I:%M %p EEST, %A, %B %d, %Y")
-        ax.set_title(f"Візуалізація маршруту ({algorithm_name})\nЧас: {solution.total_time:.2f} с\nЗагальна відстань: {total_distance:.2f} м\nДата: {current_time}")
+        ax.set_title(f"Візуалізація маршруту ({algorithm_name})\nЧас: {solution.total_time:.2f} с\nЗагальна відстань: {total_distance:.2f} м\nКількість обстежених об'єктів: {len(solution.inspected)}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.grid(True)

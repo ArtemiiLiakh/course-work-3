@@ -8,6 +8,8 @@ from algorithms.ant_algorithm import AntAlgorithm
 from models.task import Task
 from task_generator import TaskGenerator
 from plots_drawer import PlotsDrawer
+import matplotlib.pyplot as plt
+import numpy as np
 
 class UAVRoutePlanningApp:
     def __init__(self, root):
@@ -20,14 +22,11 @@ class UAVRoutePlanningApp:
         self.task_generator = TaskGenerator()
         self.plots_drawer = PlotsDrawer()
 
-
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(pady=10, expand=True)
 
-
         self.task_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.task_frame, text="Робота з ІЗ")
-
 
         self.gen_params = {
             "n": tk.StringVar(value="5"),
@@ -35,7 +34,6 @@ class UAVRoutePlanningApp:
             "T": tk.StringVar(value="30"),
             "p": tk.StringVar(value="30"),
         }
-
 
         ttk.Label(self.task_frame, text="Параметри генерації:").grid(row=0, column=0, columnspan=2, pady=5)
         ttk.Label(self.task_frame, text="Кількість об'єктів (n):").grid(row=1, column=0, padx=5, pady=2, sticky="e")
@@ -65,10 +63,8 @@ class UAVRoutePlanningApp:
         self.output_text = scrolledtext.ScrolledText(self.task_frame, height=10, width=50)
         self.output_text.grid(row=9, column=0, columnspan=2, padx=5, pady=5)
 
-
         self.vis_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.vis_frame, text="Візуалізація")
-
 
         self.exp_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.exp_frame, text="Експерименти")
@@ -76,7 +72,6 @@ class UAVRoutePlanningApp:
         self.exp_notebook = ttk.Notebook(self.exp_frame)
         self.exp_notebook.pack(pady=10, expand=True)
 
-        # 3.4.1: Вплив параметра завершення алгоритму мурашиних колоній
         self.exp_341_frame = ttk.Frame(self.exp_notebook)
         self.exp_notebook.add(self.exp_341_frame, text="3.4.1")
 
@@ -88,10 +83,8 @@ class UAVRoutePlanningApp:
             "v": tk.StringVar(value="6"),
             "range_max": tk.StringVar(value="20"),
         }
-        ttk.Label(self.exp_341_frame, text="Значення max_iter (через кому):").grid(row=0, column=0, padx=5,
-                                                                                   columnspan=2)
-        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["max_iters"]).grid(row=0, column=2, padx=5,
-                                                                                          columnspan=2)
+        ttk.Label(self.exp_341_frame, text="Значення max_iter (через кому):").grid(row=0, column=0, padx=5, columnspan=2)
+        ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["max_iters"]).grid(row=0, column=2, padx=5, columnspan=2)
         ttk.Label(self.exp_341_frame, text="Кількість об’єктів (n):").grid(row=1, column=0, padx=5)
         ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["n"]).grid(row=1, column=1, padx=5)
         ttk.Label(self.exp_341_frame, text="Макс. час (T, с):").grid(row=1, column=2, padx=5)
@@ -100,12 +93,10 @@ class UAVRoutePlanningApp:
         ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["tasks_per_iter"]).grid(row=2, column=1, padx=5)
         ttk.Label(self.exp_341_frame, text="Розмір поля:").grid(row=2, column=2, padx=5)
         ttk.Entry(self.exp_341_frame, textvariable=self.exp_341_params["range_max"]).grid(row=2, column=3, padx=5)
-        ttk.Button(self.exp_341_frame, text="Запустити", command=self.run_exp_341).grid(row=3, column=0, columnspan=4,
-                                                                                        pady=5)
+        ttk.Button(self.exp_341_frame, text="Запустити", command=self.run_exp_341).grid(row=3, column=0, columnspan=4, pady=5)
         self.exp_341_output = scrolledtext.ScrolledText(self.exp_341_frame, height=10, width=50)
         self.exp_341_output.grid(row=4, column=0, columnspan=4, pady=5)
 
-        # 3.4.2: Вплив параметрів задачі
         self.exp_342_frame = ttk.Frame(self.exp_notebook)
         self.exp_notebook.add(self.exp_342_frame, text="3.4.2")
 
@@ -117,20 +108,17 @@ class UAVRoutePlanningApp:
             "range_max": tk.StringVar(value="20"),
         }
         ttk.Label(self.exp_342_frame, text="Значення T (через кому):").grid(row=0, column=0, padx=5, columnspan=2)
-        ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["T_values"]).grid(row=0, column=2, padx=5,
-                                                                                         columnspan=2)
+        ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["T_values"]).grid(row=0, column=2, padx=5, columnspan=2)
         ttk.Label(self.exp_342_frame, text="Кількість об’єктів (n):").grid(row=1, column=0, padx=5)
         ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["n"]).grid(row=1, column=1, padx=5)
         ttk.Label(self.exp_342_frame, text="К-сть завдань для усереднення:").grid(row=2, column=0, padx=5)
         ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["tasks_per_T"]).grid(row=2, column=1, padx=5)
         ttk.Label(self.exp_342_frame, text="Розмір поля:").grid(row=2, column=2, padx=5)
         ttk.Entry(self.exp_342_frame, textvariable=self.exp_342_params["range_max"]).grid(row=2, column=3, padx=5)
-        ttk.Button(self.exp_342_frame, text="Запустити", command=self.run_exp_342).grid(row=3, column=0, columnspan=4,
-                                                                                        pady=5)
+        ttk.Button(self.exp_342_frame, text="Запустити", command=self.run_exp_342).grid(row=3, column=0, columnspan=4, pady=5)
         self.exp_342_output = scrolledtext.ScrolledText(self.exp_342_frame, height=10, width=50)
         self.exp_342_output.grid(row=4, column=0, columnspan=4, pady=5)
 
-        # 3.4.3: Вплив розмірності задачі
         self.exp_343_frame = ttk.Frame(self.exp_notebook)
         self.exp_notebook.add(self.exp_343_frame, text="3.4.3")
 
@@ -155,8 +143,7 @@ class UAVRoutePlanningApp:
         ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["T"]).grid(row=2, column=1, padx=5)
         ttk.Label(self.exp_343_frame, text="Розмір поля:").grid(row=2, column=2, padx=5)
         ttk.Entry(self.exp_343_frame, textvariable=self.exp_343_params["range_max"]).grid(row=2, column=3, padx=5)
-        ttk.Button(self.exp_343_frame, text="Запустити", command=self.run_exp_343).grid(row=3, column=0, columnspan=4,
-                                                                                        pady=5)
+        ttk.Button(self.exp_343_frame, text="Запустити", command=self.run_exp_343).grid(row=3, column=0, columnspan=4, pady=5)
         self.exp_343_output = scrolledtext.ScrolledText(self.exp_343_frame, height=10, width=50)
         self.exp_343_output.grid(row=4, column=0, columnspan=4, pady=5)
 
@@ -175,7 +162,6 @@ class UAVRoutePlanningApp:
         except ValueError as e:
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, f"Помилка генерації: {str(e)}\n")
-
 
     def load_task_from_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
@@ -299,8 +285,8 @@ class UAVRoutePlanningApp:
         experiments = self.generate_exp_341_tasks()
         self.exp_341_output.delete(1.0, tk.END)
 
-        results = {int(x.strip()): {"inspected": 0.0, "time": 0.0} for x in
-                   self.exp_341_params["max_iters"].get().split(",")}
+        max_iters = [int(x.strip()) for x in self.exp_341_params["max_iters"].get().split(",")]
+        results = {max_iter: {"inspected": 0.0, "time": 0.0} for max_iter in max_iters}
         tasks_per_iter = int(self.exp_341_params["tasks_per_iter"].get())
 
         for task, max_iters in experiments:
@@ -319,40 +305,102 @@ class UAVRoutePlanningApp:
             self.exp_341_output.insert(tk.END,
                                        f"max_iter={max_iter}: Середня кількість об’єктів={data['inspected']:.2f}, Середній час={data['time']:.2f} мс\n")
 
+        # Plotting
+        max_iter_values = list(results.keys())
+        inspected_values = [results[max_iter]["inspected"] for max_iter in max_iter_values]
+        time_values = [results[max_iter]["time"] for max_iter in max_iter_values]
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.plot(max_iter_values, inspected_values, marker='o', label='Середня кількість об’єктів')
+        plt.title('Експеримент 3.4.1: Вплив max_iter на ЦФ')
+        plt.xlabel('max_iter')
+        plt.ylabel('Середня кількість об’єктів')
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        plt.plot(max_iter_values, time_values, marker='o', color='r', label='Середній час виконання (мс)')
+        plt.title('Експеримент 3.4.1: Вплив max_iter на час')
+        plt.xlabel('max_iter')
+        plt.ylabel('Середній час (мс)')
+        plt.grid(True)
+        plt.legend()
+
+        plt.tight_layout()
+        plt.savefig('exp_341_plot.png')
+        self.plots_drawer.draw_experiment(self.exp_341_frame, 'exp_341_plot.png')
+
     def run_exp_342(self):
         experiments = self.generate_exp_342_tasks()
         self.exp_342_output.delete(1.0, tk.END)
 
-        results = {float(x.strip()): {"greedy_inspected": 0.0, "aco_inspected": 0.0} for x in
-                   self.exp_342_params["T_values"].get().split(",")}
+        T_values = [float(x.strip()) for x in self.exp_342_params["T_values"].get().split(",")]
+        results = {T: {"greedy_inspected": 0.0, "aco_inspected": 0.0, "greedy_time": 0.0, "aco_time": 0.0} for T in T_values}
         tasks_per_T = int(self.exp_342_params["tasks_per_T"].get())
 
         for task in experiments:
             T = task.T
             greedy = self.registry.get_algorithms()["Жадібний"](task)
             aco = self.registry.get_algorithms()["Мурашиний"](task)
+            # Greedy algorithm
             start_time = time.time()
             greedy_solution = greedy.SolveRoute()
             end_time = time.time()
+            greedy_exec_time = (end_time - start_time) * 1000
             results[T]["greedy_inspected"] += len(greedy_solution.inspected) / tasks_per_T
+            results[T]["greedy_time"] += greedy_exec_time / tasks_per_T
+            # ACO algorithm
             start_time = time.time()
             aco_solution = aco.SolveRoute()
             end_time = time.time()
+            aco_exec_time = (end_time - start_time) * 1000
             results[T]["aco_inspected"] += len(aco_solution.inspected) / tasks_per_T
+            results[T]["aco_time"] += aco_exec_time / tasks_per_T
 
         self.exp_342_output.insert(tk.END, "3.4.2: Вплив параметрів задачі (T)\n")
         for T, data in results.items():
             self.exp_342_output.insert(tk.END,
-                                       f"T={T}: Жадібний={data['greedy_inspected']:.2f}, Мурашиний={data['aco_inspected']:.2f}\n")
+                                       f"T={T}: Жадібний (об’єктів={data['greedy_inspected']:.2f}, час={data['greedy_time']:.2f} мс), "
+                                       f"Мурашиний (об’єктів={data['aco_inspected']:.2f}, час={data['aco_time']:.2f} мс)\n")
+
+        # Plotting
+        T_values = list(results.keys())
+        greedy_inspected = [results[T]["greedy_inspected"] for T in T_values]
+        aco_inspected = [results[T]["aco_inspected"] for T in T_values]
+        greedy_time = [results[T]["greedy_time"] for T in T_values]
+        aco_time = [results[T]["aco_time"] for T in T_values]
+
+        plt.figure(figsize=(10, 8))
+        plt.subplot(2, 1, 1)
+        plt.plot(T_values, greedy_inspected, marker='o', label='Жадібний (ЦФ)')
+        plt.plot(T_values, aco_inspected, marker='s', label='Мурашиний (ЦФ)')
+        plt.title('Експеримент 3.4.2: Вплив T на ЦФ')
+        plt.xlabel('T (с)')
+        plt.ylabel('Середня кількість об’єктів')
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        plt.plot(T_values, greedy_time, marker='o', label='Жадібний (час)')
+        plt.plot(T_values, aco_time, marker='s', label='Мурашиний (час)')
+        plt.title('Експеримент 3.4.2: Вплив T на час')
+        plt.xlabel('T (с)')
+        plt.ylabel('Середній час (мс)')
+        plt.grid(True)
+        plt.legend()
+
+        plt.tight_layout()
+        plt.savefig('exp_342_plot.png')
+        self.plots_drawer.draw_experiment(self.exp_342_frame, 'exp_342_plot.png')
 
     def run_exp_343(self):
         experiments = self.generate_exp_343_tasks()
         self.exp_343_output.delete(1.0, tk.END)
 
-        results = {n: {"greedy_inspected": 0.0, "aco_inspected": 0.0, "greedy_time": 0.0, "aco_time": 0.0}
-                   for n in
-                   range(int(self.exp_343_params["min_size"].get()), int(self.exp_343_params["max_size"].get()) + 1,
-                         int(self.exp_343_params["step"].get()))}
+        n_values = range(int(self.exp_343_params["min_size"].get()), int(self.exp_343_params["max_size"].get()) + 1,
+                        int(self.exp_343_params["step"].get()))
+        results = {n: {"greedy_inspected": 0.0, "aco_inspected": 0.0, "greedy_time": 0.0, "aco_time": 0.0} for n in n_values}
         tasks_per_n = int(self.exp_343_params["tasks_per_n"].get())
 
         for task in experiments:
@@ -378,6 +426,35 @@ class UAVRoutePlanningApp:
                                        f"n={n}: Жадібний (об’єктів={data['greedy_inspected']:.2f}, час={data['greedy_time']:.2f} мс), "
                                        f"Мурашиний (об’єктів={data['aco_inspected']:.2f}, час={data['aco_time']:.2f} мс)\n")
 
+        # Plotting
+        n_values = list(results.keys())
+        greedy_inspected = [results[n]["greedy_inspected"] for n in n_values]
+        aco_inspected = [results[n]["aco_inspected"] for n in n_values]
+        greedy_time = [results[n]["greedy_time"] for n in n_values]
+        aco_time = [results[n]["aco_time"] for n in n_values]
+
+        plt.figure(figsize=(10, 8))
+        plt.subplot(2, 1, 1)
+        plt.plot(n_values, greedy_inspected, marker='o', label='Жадібний (ЦФ)')
+        plt.plot(n_values, aco_inspected, marker='s', label='Мурашиний (ЦФ)')
+        plt.title('Експеримент 3.4.3: Вплив n на ЦФ')
+        plt.xlabel('Кількість об’єктів (n)')
+        plt.ylabel('Середня кількість об’єктів')
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        plt.plot(n_values, greedy_time, marker='o', label='Жадібний (час)')
+        plt.plot(n_values, aco_time, marker='s', label='Мурашиний (час)')
+        plt.title('Експеримент 3.4.3: Вплив n на час')
+        plt.xlabel('Кількість об’єктів (n)')
+        plt.ylabel('Середній час (мс)')
+        plt.grid(True)
+        plt.legend()
+
+        plt.tight_layout()
+        plt.savefig('exp_343_plot.png')
+        self.plots_drawer.draw_experiment(self.exp_343_frame, 'exp_343_plot.png')
 
 if __name__ == "__main__":
     root = tk.Tk()

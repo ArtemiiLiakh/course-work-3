@@ -6,7 +6,6 @@ from models.task import Task
 from models.solution import Solution
 
 class Point:
-    name: str
     x: int
     y: int
     delay: int
@@ -17,7 +16,7 @@ class Point:
         self.delay = delay
 
     def __repr__(self):
-        return f'{self.name}'
+        return f'{self.x}x{self.y}'
 
 class AlgorithmParams:
     def __init__(self,
@@ -45,14 +44,14 @@ class AntAlgorithm:
 
         if (params == None):
             params = AlgorithmParams(
-                a = 0.8,
-                b = 2,
+                a = 0.05,
+                b = 2.5,
                 p = 0.01,
-                m = 8,
-                n = 120,
+                m = 10,
+                n = len(task.J)+2,
                 t0 = 0.01,
-                max_iter = 200,
-                stagnation= 10
+                max_iter = 100,
+                stagnation = 10
             )
         self.params = params
         self.G: List[Point] = [
@@ -108,12 +107,12 @@ class AntAlgorithm:
                 pathIndexes.append(len(self.G)-1)
                 path.append(B)
 
-                if (len(Sk) > len(bestS) or (len(Sk) == len(bestS) and time < totalTime)):
-                    if (bestS == Sk):
-                        stagnationIter += 1
-                    else:
-                        stagnationIter = 0
+                if (bestS == Sk):
+                    stagnationIter += 1
+                else:
+                    stagnationIter = 0
 
+                if (len(Sk) > len(bestS) or (len(Sk) == len(bestS) and time < totalTime)):
                     bestS = Sk
                     bestPath = path
                     totalTime = time
